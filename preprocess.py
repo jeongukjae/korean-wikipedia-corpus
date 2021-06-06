@@ -3,6 +3,7 @@ import argparse
 from multiprocessing import Pool
 from functools import partial
 
+from kss import split_sentences
 from tqdm import tqdm
 
 parser = argparse.ArgumentParser()
@@ -22,31 +23,43 @@ def preprocess_fn(filename, input_path, output_path):
     os.makedirs(target_path, exist_ok=True)
 
     with open(filename, encoding='utf8') as in_file, open(target_file, 'w', encoding='utf8') as out_file:
-        output_doc = ''
-        skip_first = False
+        heading = ''
+        subheading = ''
+        content = ''
 
         for line in in_file:
             line = line.strip()
 
-            if skip_first:
-                skip_first = False
-                continue
-
-            if line == '':
-                continue
-
             if line.startswith("<doc"):
-                skip_first = True
                 continue
 
             if line.startswith("</doc"):
-                if len(output_doc) > 100:
-                    out_file.write(output_doc + "\n")
-                output_doc = ''
+                if content != '':
+                    out_file.write(_stringify_doc(heading, subheading, content))
+                heading = ''
+                subheading = ''
+                content = ''
                 continue
 
-            output_doc += "다.\n".join(line.split("다. ")) + "\n"
+            if line.startswith("## "):
+                if content != '':
+                    out_file.write(_stringify_doc(heading, subheading, content))
 
+                subheading = line[3:].strip()
+                content = ''
+                continue
+
+            if heading == '':
+                heading = line
+            elif line != '':
+                content += "\n".join(split_sentences(line, safe=True)) + "\n"
+
+
+def _stringify_doc(heading, subheading, content):
+    if subheading:
+        heading = f"{heading} - {subheading}"
+
+    return f"{heading}\n{content}\n"
 
 if __name__ == '__main__':
     args = parser.parse_args()

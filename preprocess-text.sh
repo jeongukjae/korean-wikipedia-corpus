@@ -1,3 +1,3 @@
 #!/bin/sh
-pip install tqdm
+pip install tqdm kss
 python preprocess.py
