@@ -1,3 +1,3 @@
 #!/bin/sh
-pip install tqdm kss
+pip install tqdm kss dataclasses
 python preprocess.py

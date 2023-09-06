@@ -52,7 +52,7 @@ def preprocess_fn(filename, input_path, output_path):
             if heading == '':
                 heading = line
             elif line != '':
-                content += "\n".join(split_sentences(line, safe=True)) + "\n"
+                content += "\n".join(split_sentences(line)) + "\n"
 
 
 def _stringify_doc(heading, subheading, content):
